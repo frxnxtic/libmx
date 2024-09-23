@@ -2,14 +2,53 @@
 
 #include "../inc/libmx.h"
 
-void mx_printchar(char c)
-{
+/**
+    * mx_printchar - Prints a single character to the standart output.
+    * @c: The character to print.
+*/
+void mx_printchar(char c) {
     write(1, &c, 1);
 }
 
-void mx_print_unicode(wchar_t c);
+/**
+    * mx_print_unicode - Prints a Unicode character to the standart output
+    * @c: The Unicode character to print.
+*/
+void mx_print_unicode(wchar_t c) {
+    if (c <= 0x7F) {
+        mx_printchar(c);
+    } else if (c <= 0x7FF) {
+        mx_printchar(0xC0 | (c >> 6));
+        mx_printchar(0x80 | (c & 0x3F));
+    } else if (c <= 0xFFFF) {
+        mx_printchar(0xE0 | (c >> 12));
+        mx_printchar(0x80 | ((c >> 6) & 0x3F));
+        mx_printchar(0x80 | (c & 0x3F));
+    } else if (c <= 0x10FFFF) {
+        mx_printchar(0xF0 | (c >> 18));
+        mx_printchar(0x80 | ((c >> 12) & 0x3F));
+        mx_printchar(0x80 | ((c >> 6) & 0x3F));
+        mx_printchar(0x80 | (c & 0x3F));
+    }
+}
 
-void mx_printstr(const char *s);
+
+/**
+    * mx_printstr - Prints the string to the standart output.
+    * @s: The string to print.
+*/
+void mx_printstr(const char *s) {
+    if (s == NULL) {
+        return;
+    }
+
+    int count = 0;
+
+    while (s[count] != '\0') {
+        mx_printchar(s[count]);
+        count++;
+    }
+}
 
 void mx_print_strarr(char **arr, const char *delim);
 

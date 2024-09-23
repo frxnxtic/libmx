@@ -1,1 +1,3 @@
 .editorconfig
+libmx.a
+obj/*
