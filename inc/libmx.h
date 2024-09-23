@@ -4,7 +4,7 @@
 #include <malloc.h>
 #include <unistd.h>
 #include <stddef.h>
-
+#include <stdbool.h>
 // Allowed funclions
 // malloc, malloc_usable_size, free, open, read, write, close, exit
 
@@ -40,7 +40,7 @@ char *mx_strndup(const char *s1, size_t n);
 char *mx_strcpy(char *dst, const char *src);
 char *mx_strncpy(char *dsr, const char *src, int len);
 int mx_strcmp(const char *s1, const char *s2);
-char *mx_strcat(char *restrict s1, const *restrict s2);
+char *mx_strcat(char *restrict s1, const char *restrict s2);
 char *mx_strstr(const char *haystack, const char *needle);
 int mx_get_substr_index(const char *str, const char *sub);
 int mx_count_substr(const char *str, const char *sub);
