@@ -50,15 +50,101 @@ void mx_printstr(const char *s) {
     }
 }
 
-void mx_print_strarr(char **arr, const char *delim);
+void mx_print_strarr(char **arr, const char *delim) {
+    if (!arr || !delim) {
+        return;
+    }
 
-void mx_printint(int n);
+    for (int i = 0; arr[i]; i++) {
+        mx_printstr(arr[i]);
 
-double mx_pow(double n, unsigned int pow);
+        if (arr[i + 1]) {
+            mx_printstr(delim);
+        }
+    }
+}
 
-int mx_sqrt(int x);
+void mx_printint(int n) {
+    if (n < 0) {
+        mx_printchar('-');
+        if (n == INT_MIN) {
+            mx_printchar('2');
+            n = 147483648;
+        } else {
+            n = -n;
+        }
+    }
 
-char *mx_nbr_to_hex(unsigned long nbr);
+    if (n >= 10) {
+        mx_printint(n / 10);
+    }
+
+    mx_printchar((n % 10) + '0');
+}
+
+double mx_pow(double n, unsigned int pow) {
+    double result = 1;
+
+    for (unsigned int i = 0; i < pow; i++) {
+        if (result > INT_MAX / n) {
+            return -1;
+        }
+
+        result *= n;
+    }
+
+    return result;
+}
+
+int mx_sqrt(int x) {
+    if (x < 0) {
+        return 0;
+    }
+
+    int result = 0;
+
+    for (int i = 1; i <= x / i; i++) {
+        result = i;
+    }
+
+    return result;
+}
+
+char *mx_nbr_to_hex(unsigned long nbr) {
+    if (nbr == 0) {
+        char *zero = (char *)malloc(2);
+        zero[0] = '0';
+        zero[1] = '\0';
+        return zero;
+    }
+
+    unsigned long temp = nbr;
+    int len = 0;
+
+    while (temp > 0) {
+        temp /= 16;
+        len++;
+    }
+
+    char *hex = (char *)malloc(len + 1);
+    if (hex == NULL) {
+        return NULL;
+    }
+
+    hex[len] = '\0';
+
+    while (nbr > 0) {
+        unsigned long remain = nbr % 16;
+        if (remain < 10) {
+            hex[--len] = '0' + remain;
+        } else {
+            hex[--len] = 'a' + (remain - 10);
+        }
+        nbr /= 16;
+    }
+
+    return hex;
+}
 
 unsigned long mx_hex_to_nbr(const char *hex);
 

@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdbool.h>
+
+#define INT_MIN -2147483648
+#define INT_MAX 2147483647
 // Allowed funclions
 // malloc, malloc_usable_size, free, open, read, write, close, exit
 
