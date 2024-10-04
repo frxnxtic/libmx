@@ -146,16 +146,152 @@ char *mx_nbr_to_hex(unsigned long nbr) {
     return hex;
 }
 
-unsigned long mx_hex_to_nbr(const char *hex);
+unsigned long mx_hex_to_nbr(const char *hex) {
+    if (!hex) {
+        return 0;  // Null input
+    }
 
-char *mx_itoa(int number);
+    unsigned long result = 0;
 
-void mx_foreach(int *arr, int size, void(*f)(int));
+    for (int i = 0; hex[i] != '\0'; i++) {
+        result *= 16;
+        if (hex[i] >= '0' && hex[i] <= '9') {
+            result += hex[i] - '0';
+        } else if (hex[i] >= 'A' && hex[i] <= 'F') {
+            result += hex[i] - 'A' + 10;
+        } else if (hex[i] >= 'a' && hex[i] <= 'f') {
+            result += hex[i] - 'a' + 10;
+        } else {
+            return 0;  // Invalid character in input
+        }
+    }
 
-int mx_binary_search(char **arr, int size, const char *s, int *count);
+    return result;
+}
 
-int mx_bubble_sort(char **arr, int size);
+char *mx_itoa(int number) {
+    int temp = number;
+    int len = (number <= 0) ? 1 : 0;
 
-int mx_quicksort(char **arr, int left, int right);
+    while (temp) {
+        temp /= 10;
+        len++;
+    }
 
+    char *str = (char *)malloc(len + 1);
+    if (!str) {
+        return NULL;
+    }
 
+    str[len] = '\0';
+    if (number == 0) {
+        str[0] = '0';
+        return str;
+    }
+
+    int neg = (number < 0) ? 1 : 0;
+    if (neg) {
+        str[0] = '-';
+        number = -number;
+    }
+
+    while (number) {
+        str[--len] = (number % 10) + '0';
+        number /= 10;
+    }
+
+    return str;
+}
+
+void mx_foreach(int *arr, int size, void (*f)(int)) {
+    if (!arr || !f) {
+        return;
+    }
+
+    for (int i = 0; i < size; i++) {
+        f(arr[i]);
+    }
+}
+
+int mx_binary_search(char **arr, int size, const char *s, int *count) {
+    if (!arr || !s || size <= 0) {
+        return -1;
+    }
+
+    int left = 0;
+    int right = size - 1;
+    *count = 0;
+
+    while (left <= right) {
+        (*count)++;
+        int mid = (left + right) / 2;
+        int cmp = strcmp(arr[mid], s);
+
+        if (cmp == 0) {
+            return mid;
+        } else if (cmp < 0) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return -1;  // Not found
+}
+
+int mx_bubble_sort(char **arr, int size) {
+    if (!arr || size <= 1) {
+        return 0;
+    }
+
+    int swaps = 0;
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - 1 - i; j++) {
+            if (strcmp(arr[j], arr[j + 1]) > 0) {
+                char *temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+                swaps++;
+            }
+        }
+    }
+
+    return swaps;
+}
+
+int mx_quicksort(char **arr, int left, int right) {
+    if (!arr || left >= right) {
+        return 0;
+    }
+
+    int swaps = 0;
+    int pivot_index = left + (right - left) / 2;
+    char *pivot = arr[pivot_index];
+
+    int i = left;
+    int j = right;
+
+    while (i <= j) {
+        while (strcmp(arr[i], pivot) < 0) {
+            i++;
+        }
+        while (strcmp(arr[j], pivot) > 0) {
+            j--;
+        }
+        if (i <= j) {
+            if (i != j) {
+                char *temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+                swaps++;
+            }
+            i++;
+            j--;
+        }
+    }
+
+    swaps += mx_quicksort(arr, left, j);
+    swaps += mx_quicksort(arr, i, right);
+
+    return swaps;
+}
