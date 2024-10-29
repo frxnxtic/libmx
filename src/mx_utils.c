@@ -1,4 +1,31 @@
-/* mx_utils.c */
+/**
+ * @file mx_utils.c
+ * @brief Utility functions for various operations such as printing, 
+ *        mathematical calculations, and array manipulations.
+ *
+ * This file contains a collection of utility functions that provide 
+ * basic functionalities such as printing characters, strings, and integers 
+ * to the standard output, performing mathematical operations like power 
+ * and square root calculations, and converting numbers between different 
+ * formats. Additionally, it includes functions for sorting and searching 
+ * arrays.
+ *
+ * Functions:
+ * - void mx_printchar(char c): Prints a single character to the standard output.
+ * - void mx_print_unicode(wchar_t c): Prints a Unicode character to the standard output.
+ * - void mx_printstr(const char *s): Prints a string to the standard output.
+ * - void mx_print_strarr(char **arr, const char *delim): Prints an array of strings with a delimiter.
+ * - void mx_printint(int n): Prints an integer to the standard output.
+ * - double mx_pow(double n, unsigned int pow): Calculates the power of a number.
+ * - int mx_sqrt(int x): Calculates the square root of a number.
+ * - char *mx_nbr_to_hex(unsigned long nbr): Converts a number to its hexadecimal string representation.
+ * - unsigned long mx_hex_to_nbr(const char *hex): Converts a hexadecimal string to its numerical representation.
+ * - char *mx_itoa(int number): Converts an integer to its string representation.
+ * - void mx_foreach(int *arr, int size, void (*f)(int)): Applies a function to each element of an integer array.
+ * - int mx_binary_search(char **arr, int size, const char *s, int *count): Performs binary search on a sorted array of strings.
+ * - int mx_bubble_sort(char **arr, int size): Sorts an array of strings using bubble sort algorithm.
+ * - int mx_quicksort(char **arr, int left, int right): Sorts an array of strings using quicksort algorithm.
+ */
 
 #include "../inc/libmx.h"
 
@@ -225,7 +252,7 @@ int mx_binary_search(char **arr, int size, const char *s, int *count) {
     while (left <= right) {
         (*count)++;
         int mid = (left + right) / 2;
-        int cmp = strcmp(arr[mid], s);
+        int cmp = mx_strcmp(arr[mid], s);
 
         if (cmp == 0) {
             return mid;
@@ -247,7 +274,7 @@ int mx_bubble_sort(char **arr, int size) {
     int swaps = 0;
     for (int i = 0; i < size - 1; i++) {
         for (int j = 0; j < size - 1 - i; j++) {
-            if (strcmp(arr[j], arr[j + 1]) > 0) {
+            if (mx_strcmp(arr[j], arr[j + 1]) > 0) {
                 char *temp = arr[j];
                 arr[j] = arr[j + 1];
                 arr[j + 1] = temp;
@@ -272,10 +299,10 @@ int mx_quicksort(char **arr, int left, int right) {
     int j = right;
 
     while (i <= j) {
-        while (strcmp(arr[i], pivot) < 0) {
+        while (mx_strcmp(arr[i], pivot) < 0) {
             i++;
         }
-        while (strcmp(arr[j], pivot) > 0) {
+        while (mx_strcmp(arr[j], pivot) > 0) {
             j--;
         }
         if (i <= j) {

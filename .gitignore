@@ -1,3 +1,6 @@
 .editorconfig
 libmx.a
 obj/*
+a.out
+inc/*.gch
+src/test_*

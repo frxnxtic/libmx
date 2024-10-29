@@ -5,9 +5,11 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <fcntl.h>
 
 #define INT_MIN -2147483648
 #define INT_MAX 2147483647
+
 // Allowed funclions
 // malloc, malloc_usable_size, free, open, read, write, close, exit
 
@@ -48,7 +50,7 @@ char *mx_strstr(const char *haystack, const char *needle);
 int mx_get_substr_index(const char *str, const char *sub);
 int mx_count_substr(const char *str, const char *sub);
 int mx_count_words(const char *str, char c);
-char mx_strnew(const int size);
+char *mx_strnew(const int size);
 char *mx_strtrim(const char *str);
 char *mx_del_extra_spaces(const char *str);
 char **mx_strsplit(const char *s, char c);
