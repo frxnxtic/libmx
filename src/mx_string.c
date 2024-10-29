@@ -26,9 +26,12 @@
  * - int mx_count_words(const char *str, char c): Counts the number of words in a string separated by a given character.
  * - char *mx_strnew(const int size): Allocates a new string of a given size and initializes it with null characters.
  * - char *mx_strtrim(const char *str): Trims leading and trailing whitespace from a string.
- * - char *mx_del_extra_space(const char *str): Removes extra spaces from a string, leaving only single spaces between words.
+ * - char *mx_del_extra_spaces(const char *str): Removes extra spaces from a string, leaving only single spaces between words.
  * - char **mx_strsplit(const char *str, char c): Splits a string into an array of words separated by a given character.
  * - char *mx_strjoin(const char *s1, const char *s2): Joins two strings into a new string.
+ * - char *mx_file_to_str(const char *file): Reads the contents of a file into a string.
+ * - char *mx_replace_substr(const char *str, const char *sub, const char *replace): Replaces all occurrences of a substring in a string with another substring.
+ * - int mx_read_line(char **lineptr, size_t buf_size, char delim, const int fd): Reads a line from a file descriptor.
  */
 
 #include "../inc/libmx.h"
@@ -48,13 +51,13 @@ int mx_strlen(const char *s) {
 }
 
 void mx_swap_char(char *s1, char *s2) {
-    if (s1 == NULL || s2 == NULL) {
+    if (!(s1 && s2)) {
         return;
     }
 
-    char *temp = s1;
-    s1 = s2;
-    s2 = temp;
+    char temp = *s1;
+    *s1 = *s2;
+    *s2 = temp;
 }
 
 void mx_str_reverse(char *s) {
@@ -123,7 +126,7 @@ char *mx_strdup(const char *s1) {
 }
 
 char *mx_strndup(const char *s1, size_t n) {
-    if (s1 == NULL || n == 0) {
+    if (s1 == NULL) {
         return NULL;
     }
 
@@ -160,41 +163,44 @@ char *mx_strcpy(char *dst, const char *src) {
 }
 
 char *mx_strncpy(char *dst, const char *src, int len) {
-    if (src == NULL || len == 0) {
+    if (src == NULL || dst == NULL || len < 0) {
         return NULL;
     }
 
     char *buf = dst;
 
-    while (len-- && *src) {
+    
+    while (len > 0 && *src) {
         *dst++ = *src++;
+        len--;
     }
 
-    while (len--) {
+    
+    while (len > 0) {
         *dst++ = '\0';
+        len--;
     }
 
     return buf;
 }
 
-
 int mx_strcmp(const char *s1, const char *s2) {
-    // Check for NULL pointers and return an error code
+    
     if (s1 == NULL || s2 == NULL) {
-        return -2; // Error code for NULL string(s)
+        return -2; 
     }
 
-    // Compare the strings character by character
+    
     while (*s1 && *s2) {
         if (*s1 != *s2) {
-            return *s1 - *s2; // Return the difference of the first non-matching characters
+            return *s1 - *s2; 
         }
         s1++;
         s2++;
     }
 
-    // If we reach here, one of the strings has ended
-    return *s1 - *s2; // This will handle cases where strings are of different lengths
+    
+    return *s1 - *s2; 
 }
 
 
@@ -218,32 +224,32 @@ char *mx_strcat(char *restrict s1, const char *restrict s2) {
 }
 
 char *mx_strstr(const char *haystack, const char *needle) {
-    // Если needle пустая строка, вернем указатель на начало haystack
+    
     if (!needle || *needle == '\0') {
         return (char *)haystack;
     }
 
-    // Проходим по каждому символу haystack
+    
     while (*haystack) {
         const char *h = haystack;
         const char *n = needle;
 
-        // Проверяем посимвольно совпадают ли строки
+        
         while (*h && *n && *h == *n) {
             h++;
             n++;
         }
 
-        // Если дошли до конца needle, значит нашли совпадение
+        
         if (*n == '\0') {
             return (char *)haystack;
         }
 
-        // Переходим к следующему символу haystack
+        
         haystack++;
     }
 
-    // Если не нашли needle, возвращаем NULL
+    
     return NULL;
 }
 
@@ -276,7 +282,7 @@ int mx_count_substr(const char *str, const char *sub) {
 
     while ((buf = mx_strstr(buf, sub)) != NULL) {
         count++;
-        buf++;  // Продвигаемся на 1 символ вперед, чтобы искать последующие вхождения
+        buf++;  
     }
 
     return count;
@@ -314,7 +320,7 @@ char *mx_strnew(const int size) {
     return res;
 }
 
-// Проверка на пробельные символы
+
 bool is_space(char c) {
     return (c == ' ' || c == '\n' || c == '\t' || c == '\f');
 }
@@ -325,37 +331,33 @@ char *mx_strtrim(const char *str) {
     }
 
     int start = 0;
-    int end = 0;
+    int end = mx_strlen(str) - 1;
     
-    // Определяем конец строки
-    while (str[end]) {
-        end++;
-    }
-    end--; // Начинаем с последнего символа
+    
 
-    // Пропускаем пробелы с начала строки
+    
     while (is_space(str[start])) {
         start++;
     }
 
-    // Пропускаем пробелы с конца строки
+    
     while (end >= start && is_space(str[end])) {
         end--;
     }
 
-    // Вычисляем новую длину
+    
     int new_len = end - start + 1;
     if (new_len <= 0) {
-        return mx_strnew(0); // Если нет непустых символов
+        return mx_strnew(0); 
     }
 
-    // Создаем новую строку
+    
     char *trimmed_str = mx_strnew(new_len);
     if (trimmed_str == NULL) {
         return NULL;
     }
 
-    // Копируем обрезанную строку
+    
     for (int i = 0; i < new_len; i++) {
         trimmed_str[i] = str[start + i];
     }
@@ -363,53 +365,51 @@ char *mx_strtrim(const char *str) {
     return trimmed_str;
 }
 
-char *mx_del_extra_space(const char *str) {
+char *mx_del_extra_spaces(const char *str) {
     if (str == NULL) {
-        return NULL; // Возврат NULL для пустой строки
+        return NULL; 
     }
 
     int length = mx_strlen(str);
-    char *result = mx_strnew(length); // Создаем новый буфер
+    char *result = mx_strnew(length); 
 
     if (result == NULL) {
-        return NULL; // Возврат NULL, если не удалось выделить память
+        return NULL; 
     }
 
-    int j = 0; // Индекс для результата
-    bool in_space = false; // Флаг, указывающий, что мы находимся в пробельной области
+    int j = 0; 
+    bool in_space = false; 
 
     for (int i = 0; i < length; i++) {
-        if (!is_space(str[i])) {
-            // Если текущий символ не пробел, добавляем его в результат
+        if (!is_space((unsigned char)str[i])) {
             result[j++] = str[i];
-            in_space = false; // Сбрасываем флаг пробела
-        } else if (!in_space) {
-            // Если мы встречаем пробел и не находимся в пробельной области
-            result[j++] = ' '; // Добавляем один пробел
-            in_space = true; // Устанавливаем флаг пробела
+            in_space = false;
+        } else if (!in_space && j > 0) { 
+            result[j++] = ' ';
+            in_space = true;
         }
     }
 
-    // Убираем последний пробел, если он есть
+    
     if (j > 0 && result[j - 1] == ' ') {
-        result[j - 1] = '\0'; // Убираем последний пробел
+        result[j - 1] = '\0'; 
     } else {
-        result[j] = '\0'; // Завершаем строку нулевым символом
+        result[j] = '\0'; 
     }
 
-    return result; // Возвращаем результат
+    return result; 
 }
 
 char **mx_strsplit(const char *str, char c) {
     if (str == NULL) {
-        return NULL; // Возврат NULL для пустой строки
+        return NULL; 
     }
 
-    int word_count = mx_count_words(str, c); // Подсчет количества слов
-    char **result = (char **)malloc((word_count + 1) * sizeof(char *)); // +1 для NULL
+    int word_count = mx_count_words(str, c); 
+    char **result = (char **)malloc((word_count + 1) * sizeof(char *)); 
 
     if (result == NULL) {
-        return NULL; // Возврат NULL, если не удалось выделить память
+        return NULL; 
     }
 
     int index = 0;
@@ -418,33 +418,33 @@ char **mx_strsplit(const char *str, char c) {
     for (int i = 0; str[i]; i++) {
         if (str[i] != c) {
             if (start == -1) {
-                start = i; // Запоминаем начало слова
+                start = i; 
             }
         } else {
             if (start != -1) {
-                result[index++] = mx_strndup(str + start, i - start); // Копируем слово
-                start = -1; // Сбрасываем
+                result[index++] = mx_strndup(str + start, i - start); 
+                start = -1; 
             }
         }
     }
 
-    // Если строка не заканчивается разделителем, копируем последнее слово
+    
     if (start != -1) {
         result[index++] = mx_strndup(str + start, mx_strlen(str) - start);
     }
 
-    result[index] = NULL; // Завершаем массив NULL
+    result[index] = NULL; 
 
-    return result; // Возвращаем массив строк
+    return result; 
 }
 
 char *mx_strjoin(const char *s1, const char *s2) {
-    // Проверяем на NULL
+    
     if (s1 == NULL && s2 == NULL) {
         return NULL;
     }
     
-    // Если одна из строк NULL, возвращаем другую
+    
     if (s1 == NULL) {
         return mx_strdup(s2);
     }
@@ -452,22 +452,22 @@ char *mx_strjoin(const char *s1, const char *s2) {
         return mx_strdup(s1);
     }
 
-    // Вычисляем длины строк
+    
     int len1 = mx_strlen(s1);
     int len2 = mx_strlen(s2);
     
-    // Выделяем память для объединенной строки
+    
     char *result = mx_strnew(len1 + len2);
     if (result == NULL) {
-        return NULL; // Возвращаем NULL, если не удалось выделить память
+        return NULL; 
     }
 
-    // Копируем первую строку
+    
     mx_strcpy(result, s1);
-    // Копируем вторую строку
+    
     mx_strcat(result, s2);
     
-    return result; // Возвращаем объединенную строку
+    return result; 
 }
 
 char *mx_file_to_str(const char *file) {
@@ -475,6 +475,129 @@ char *mx_file_to_str(const char *file) {
         return NULL;
     }
 
-    int fd = read()
+    int fd = open(file, O_RDONLY);
+
+    if (fd < 0) {
+        return NULL;
+    }
+
+    char buf[1];
+    int len = 0;
+    while (read(fd, buf, 1)) {
+        len++;
+    }
+
+    close(fd);
+
+
+    fd = open(file, O_RDONLY);
+    if (fd < 0) {
+        return NULL;
+    }
+
+    char *result = mx_strnew(len);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    read(fd, result, len);
+
+    close(fd);
+
+    return result;
 }
 
+char *mx_replace_substr(const char *str, const char *sub, const char *replace) {
+    if (str == NULL || sub == NULL || replace == NULL) {
+        return NULL;
+    }
+
+    int sub_count = mx_count_substr(str, sub);
+    if (sub_count == 0) {
+        return mx_strdup(str);
+    }
+
+    int sub_len = mx_strlen(sub);
+    int replace_len = mx_strlen(replace);
+    int new_len = mx_strlen(str) + sub_count * (replace_len - sub_len);
+
+    char *result = mx_strnew(new_len);
+    if (result == NULL) {
+        return NULL;
+    }
+
+    int i = 0;
+    int j = 0;
+
+    while (str[i]) {
+        if (mx_strstr(str + i, sub) == str + i) {
+            mx_strcpy(result + j, replace);
+            i += sub_len;
+            j += replace_len;
+        } else {
+            result[j++] = str[i++];
+        }
+    }
+
+    return result;
+}
+
+int mx_read_line(char **lineptr, size_t buf_size, char delim, const int fd) {
+    if (lineptr == NULL || buf_size == 0 || fd < 0) {
+        return -2; 
+    }
+
+    
+    if (*lineptr == NULL) {
+        *lineptr = (char *)malloc(buf_size);
+        if (*lineptr == NULL) {
+            return -2; 
+        }
+    }
+
+    size_t i = 0;
+    char c;
+
+    while (read(fd, &c, 1) > 0) {
+        if (c == delim) { 
+            break; 
+        }
+
+        (*lineptr)[i] = c; 
+        i++;
+
+        
+        if (i == buf_size) {
+            char *new_buf = (char *)malloc(buf_size * 2);
+            if (new_buf == NULL) {
+                
+                return -2; 
+            }
+
+            for (size_t j = 0; j < buf_size; j++) {
+                new_buf[j] = (*lineptr)[j]; 
+            }
+            free(*lineptr); 
+            *lineptr = new_buf; 
+            buf_size *= 2; 
+        }
+    }
+
+    
+    if (i == 0 && read(fd, &c, 1) <= 0) {
+        free(*lineptr);
+        *lineptr = NULL; 
+        return -1; 
+    }
+
+    (*lineptr)[i] = '\0'; 
+
+    
+    if (i > 0 && (*lineptr)[i - 1] == '\n') {
+        (*lineptr)[i - 1] = '\0'; 
+        return i - 1; 
+    }
+
+    return i; 
+}

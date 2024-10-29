@@ -109,14 +109,15 @@ void mx_printint(int n) {
     mx_printchar((n % 10) + '0');
 }
 
+
 double mx_pow(double n, unsigned int pow) {
-    double result = 1;
+    if (pow == 0) {
+        return 1;
+    }
 
-    for (unsigned int i = 0; i < pow; i++) {
-        if (result > INT_MAX / n) {
-            return -1;
-        }
+    double result = n;
 
+    for (unsigned int i = 1; i < pow; i++) {
         result *= n;
     }
 
@@ -124,17 +125,17 @@ double mx_pow(double n, unsigned int pow) {
 }
 
 int mx_sqrt(int x) {
-    if (x < 0) {
-        return 0;
+    if (x == 0 || x == 1) {
+        return x;
     }
 
-    int result = 0;
-
-    for (int i = 1; i <= x / i; i++) {
-        result = i;
+    for (int i = 1; i <= x / 2; i++) {
+        if (i * i == x) {
+            return i;
+        }
     }
 
-    return result;
+    return 0;
 }
 
 char *mx_nbr_to_hex(unsigned long nbr) {
@@ -175,7 +176,7 @@ char *mx_nbr_to_hex(unsigned long nbr) {
 
 unsigned long mx_hex_to_nbr(const char *hex) {
     if (!hex) {
-        return 0;  // Null input
+        return 0;  
     }
 
     unsigned long result = 0;
@@ -189,45 +190,43 @@ unsigned long mx_hex_to_nbr(const char *hex) {
         } else if (hex[i] >= 'a' && hex[i] <= 'f') {
             result += hex[i] - 'a' + 10;
         } else {
-            return 0;  // Invalid character in input
+            return 0;  
         }
     }
 
     return result;
 }
 
-char *mx_itoa(int number) {
-    int temp = number;
-    int len = (number <= 0) ? 1 : 0;
 
-    while (temp) {
-        temp /= 10;
+
+char *mx_itoa(int number) {
+    if (number == INT_MIN) {
+        return mx_strdup("-2147483648");
+    }
+
+    int len = 1;
+    int temp = number;
+
+    while (temp /= 10) {
         len++;
     }
 
-    char *str = (char *)malloc(len + 1);
-    if (!str) {
+    char *result = mx_strnew(len + (number < 0 ? 1 : 0));
+    if (result == NULL) {
         return NULL;
     }
 
-    str[len] = '\0';
-    if (number == 0) {
-        str[0] = '0';
-        return str;
-    }
-
-    int neg = (number < 0) ? 1 : 0;
-    if (neg) {
-        str[0] = '-';
+    if (number < 0) {
+        result[0] = '-';
         number = -number;
     }
 
-    while (number) {
-        str[--len] = (number % 10) + '0';
+    for (int i = len - 1; i >= 0; i--) {
+        result[i + (result[0] == '-')] = number % 10 + '0';
         number /= 10;
     }
 
-    return str;
+    return result;
 }
 
 void mx_foreach(int *arr, int size, void (*f)(int)) {
@@ -263,7 +262,8 @@ int mx_binary_search(char **arr, int size, const char *s, int *count) {
         }
     }
 
-    return -1;  // Not found
+    *count = 0;
+    return -1;  
 }
 
 int mx_bubble_sort(char **arr, int size) {
@@ -286,25 +286,27 @@ int mx_bubble_sort(char **arr, int size) {
     return swaps;
 }
 
+
+
 int mx_quicksort(char **arr, int left, int right) {
-    if (!arr || left >= right) {
-        return 0;
+    if (!arr || left < 0 || right < 0) {
+        return -1;
     }
 
     int swaps = 0;
-    int pivot_index = left + (right - left) / 2;
-    char *pivot = arr[pivot_index];
-
     int i = left;
     int j = right;
+    int pivot = mx_strlen(arr[(left + right) / 2]);
 
     while (i <= j) {
-        while (mx_strcmp(arr[i], pivot) < 0) {
+        while (mx_strlen(arr[i]) < pivot) {
             i++;
         }
-        while (mx_strcmp(arr[j], pivot) > 0) {
+
+        while (mx_strlen(arr[j]) > pivot) {
             j--;
         }
+
         if (i <= j) {
             if (i != j) {
                 char *temp = arr[i];
@@ -317,8 +319,13 @@ int mx_quicksort(char **arr, int left, int right) {
         }
     }
 
-    swaps += mx_quicksort(arr, left, j);
-    swaps += mx_quicksort(arr, i, right);
+    if (left < j) {
+        swaps += mx_quicksort(arr, left, j);
+    }
+
+    if (i < right) {
+        swaps += mx_quicksort(arr, i, right);
+    }
 
     return swaps;
 }
